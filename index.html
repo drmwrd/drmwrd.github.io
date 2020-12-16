@@ -1,58 +1,226 @@
-
-
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-		<meta charset="utf-8">
+<head>
+    <meta charset="UTF-8">
+    <title>相册</title>
+    <style>
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #29454d;
+            /*禁止文字被选中*/
+            -moz-user-select: none;
+            /*火狐*/
+            -webkit-user-select: none;
+            /*webkit浏览器*/
+            -ms-user-select: none;
+            /*IE10*/
+            -khtml-user-select: none;
+            /*早期浏览器*/
+            user-select: none;
+            overflow: hidden;
+        }
 
-		<meta name="description" content="JavaScript controlled particles follow the mouse generating a smooth pattern. The HTML5 canvas element is used for visual output." />
-		<meta name="keywords" content="hakim, elhattab, hakim el hattab, hakim elhattab, interactive, developer, flash, html5, canvas, web, experiments" />
-		<meta name="author" content="Hakim El Hattab" />
+        .box {
+            position: relative;
+            height: 500px;
+            width: 500px;
+            margin: 100px auto;
+            transform-style: preserve-3d;
+            perspective: 2000px;
+        }
 
-		<meta http-equiv="X-UA-Compatible" content="chrome=1">
-	    
-        <title>Trail - an experiment with particle movement patterns using HTML5.</title>
+        .di {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            height: 200px;
+            width: 200px;
+            transform: translate(-50%, -50%) rotatex(90deg);
+            transform-style: preserve-3d;
+        }
 
-		<style type="text/css"> html{color:#000;background:#222222;}a{cursor:pointer;}html,body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,code,form,fieldset,legend,input,textarea,p,blockquote,th,td{margin:0;padding:0;}table{border-collapse:collapse;border-spacing:0;}fieldset,img{border:0;}address,caption,cite,code,dfn,em,strong,th,var{font-style:normal;font-weight:normal;}li{list-style:none;}caption,th{text-align:left;}q:before,q:after{content:'';}abbr,acronym {border:0;font-variant:normal;}sup {vertical-align:text-top;}sub {vertical-align:text-bottom;}input,textarea,select{font-family:inherit;font-size:inherit;font-weight:inherit;outline-style:none;outline-width:0pt;}legend{color:#000;}a:focus,object,h1,h2,h3,h4,h5,h6{-moz-outline-style: none; border:0px;}strong {font-weight: bold;}body {overflow: hidden;font-family: Georgia, Helvetica, Arial, sans-serif;color: #333333;font-size: 11px;}a, a:hover {transition: all .08s linear;-o-transition: all .08s linear;-moz-transition: all .08s linear;-webkit-transition: all .08s linear;padding: 1px;}p.noCanvas {color: #999999;font-size: 24px;text-align: center;margin-top: 150px;}#panel {position: absolute;margin: 5px;padding: 5px;z-index: 99;background-color: #FFFECF;border: 1px solid #e1e0af;}#panel a {color: #333333;background-color: #FFFECF;text-decoration: underline;}#panel a:hover {color: #FFFECF;background-color: #333333;}#panel a.versionLink {padding: 1px;text-decoration: underline;}#panel a.versionLink.selected {color: #888888;text-decoration: none;}#panel p {padding: 0px 5px 5px 5px;line-height: 1.6em;}#panel h2 {font-size: 20px;font-weight: bold;font-family: Helvetica, sans-serif;padding: 5px 5px 5px 5px;}#chromeBadge {position: absolute;bottom: 0;right: 0;padding: 4px;}#sharing {background-color: #FFFECF;position: absolute;top: 0;right: 0;margin: 5px;padding: 7px 0 4px 10px;z-index: 98;border: 1px solid #e1e0af;}#facebook_button {float: left;}#retweet_button {float: left;}#flattr_button {float: right;margin: 1px 10px 0 4px;}
-		</style>
+        .z {
+            position: relative;
+            height: 200px;
+            width: 200px;
+            border-radius: 50%;
+            transform-style: preserve-3d;
+            /*transform: rotatez(1deg);*/
+        }
 
-		<link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
+        p {
+            margin: 0;
+            position: absolute;
+            top: 0;
+            /*为了保证圆心在父盒子中心，父盒子旋转时圆心稳定，所以设置left*/
+            left: 25px;
+            height: 200px;
+            width: 150px;
+            border: 2px solid #fd7068;
+            box-sizing: border-box;
+            background-color: #ffffff;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            /*opacity: .7;*/
+            font-size: 10px;
+            line-height: 200px;
+            text-align: center;
+            /*box-shadow: 0 0 100px #16ff8b;*/
+            /*倒影，不兼容*/
+            -webkit-box-reflect: below 10px -webkit-linear-gradient(top, rgba(250, 250, 250, 0), rgba(250, 250, 250, .0) 30%, rgba(250, 250, 250, 0.5));
+            box-reflect: below 10px -webkit-linear-gradient(top, rgba(250, 250, 250, 0), rgba(250, 250, 250, .0) 30%, rgba(250, 250, 250, 0.5));
+            /*backface-visibility: hidden;*/
+        }
+    </style>
+</head>
 
-		<link href="styles.css" rel="stylesheet" media="screen" />
-<script>
-var flattr_url = 'http://hakim.se/experiments/html5/trail/03/';
-var flattr_btn='compact';
-</script>
-
-		<!-- Google Analytics Tracking Code -->
-		<script>
-		var _gaq = [['_setAccount', 'UA-15240703-1'], ['_trackPageview']];
-		(function(d, t) {
-		var g = d.createElement(t),
-		    s = d.getElementsByTagName(t)[0];
-		g.async = true;
-		g.src = ('https:' == location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-		s.parentNode.insertBefore(g, s);
-		})(document, 'script');
-		</script>
-
-    </head>
-    <body>
-		<div id="panel">
-			<h2><a href="../../../">Experiments</a> / Trail  / 03</h2>
-			<p>Click and hold to increase the radius.<br/>If you liked this you should check out:</p>
-			<div style="padding: 5px;"><a href="../01/" class="versionLink">Trail 01</a> - <a href="../02/" class="versionLink">Trail 02</a> - <a href="../03/" class="versionLink selected">Trail 03</a></div>					</div>
-		
-<canvas id="world"><p class="noCanvas">You need a <a href="https://www.google.com/chrome">modern browser</a> to view this.</p></canvas>
-<div id="sharing">
-	<div id="flattr_button"><script src="https://api.flattr.com/button/load.js" type="text/javascript"></script></div>
-	<iframe id="facebook_button" src="https://www.facebook.com/plugins/like.php?href=http%3A%2F%2Fhakim.se%2Fexperiments%2Fhtml5%2Ftrail%2F03%2F&amp;layout=button_count&amp;show_faces=false&amp;width=90&amp;action=like&amp;font=arial&amp;colorscheme=light&amp;height=21" scrolling="no" frameborder="0" style="border:none; overflow:hidden; width:90px; height:21px;" allowTransparency="true"></iframe>
-	<div id="retweet_button">
-		<a href="https://twitter.com/share" class="twitter-share-button" data-url="http://hakim.se/experiments/html5/trail/03/" data-text="Trail - an experiment with particle movement patterns in HTML5 by @hakimel." data-count="horizontal" data-related="hakimel">Tweet</a>
-		<script type="text/javascript" src="https://platform.twitter.com/widgets.js"></script>
-	</div>
+<body>
+<div class="box">
+    <div class="di">
+        <div class="z">
+            <p>img/01.png</p>
+            <p>img/02.png</p>
+            <p>img/03.png</p>
+            <p>img/04.png</p>
+            <p>img/05.png</p>
+            <p>img/06.png</p>
+            <p>img/07.png</p>
+            <p>img/08.png</p>
+            <p>img/09.png</p>
+            <p>img/10.png</p>
+            <p>img/11.png</p>
+            <pimg/12.png</p>
+        </div>
+    </div>
 </div>
-<script type="text/javascript" src="https://platform.twitter.com/widgets.js"></script><script src="js/trail.js"></script>
+<script>
+    window.onload = function () {
+        setPs();
+        move();
+        drop();
+    }
+        //给每个p标签设置位置
+    function setPs() {
+        var ps = document.getElementsByTagName('p');
+        for (var i = 0; i < ps.length; i++) {
+            ps[i].style.transform = 'rotatex(-90deg) rotatey(' + i * 30 + 'deg) translatez(400px)'
+        }
+    }
+    //鼠标拖动旋转
+    function move() {
+        var zBox = document.querySelector('.z');
+        var xBox = document.querySelector('.di');
+        //声明计算鼠标移动速度用的变量
+        var speedTimer = null;
+        var speedX = 0;
+        var speedY = 0;
+        //声明记录旋转角度的两个变量
+        var xDegNow = 90;
+        var zDegNow = 0;
+        //声明变量记录要旋转的角度
+        var xDegDistance = 0;
+        var zDegDistance = 0;
+        //声明变量记录是否发生鼠标移动事件
+        var isMove = false;
+        window.onmousedown = function (e) {
+            //鼠标按下
+            //清除过渡属性
+            xBox.style.transition = '';
+            zBox.style.transition = '';
+            //记录按下的坐标以及计算速度的初始坐标
+            var xstart = e.clientX;
+            var speedX_start = xstart;
+            var ystart = e.clientY;
+            var speedY_start = ystart;
+            //记录用来计算速度的初始时间
+            var tstart = new Date().getTime();
+            var tnow = tstart;
+            //设置计时器更新计算速度的当时时间
+            speedTimer = setInterval(function () {
+                tnow = new Date().getTime();
+            },10)
+            window.onmousemove = function (e) {
+                //鼠标移动
+                isMove = true;
+                //记录当时的坐标计算距离
+                var xnow = e.clientX;
+                var ynow = e.clientY;
+                var xDistance = xnow - xstart;
+                var yDistance = ynow - ystart;
+                //如果计时超过一定时间（10毫秒），计算速度
+                if (tnow - tstart >= 10) {
+                    //速度=（现在的坐标-初始坐标）/（现在时间-初始时间）
+                    speedX = (xnow - speedX_start) / (tnow - tstart);
+                    speedY = (ynow - speedY_start) / (tnow - tstart);
+                    //让初始时间和坐标等于现在的时间和坐标
+                    tstart = tnow;
+                    speedX_start = xnow;
+                    speedY_start = ynow;
+                }
+                //把鼠标移动距离计算成角度后设置到页面上
+                zDegDistance = zDegNow - (xDistance / 10);
+                zBox.style.transform = 'rotatez(' + zDegDistance + 'deg)';
+                xDegDistance = xDegNow - (yDistance / 10);
+                xDegDistance = xDegDistance > 179 ? 179 : xDegDistance < 1 ? 1 : xDegDistance;
+                xBox.style.transform = 'translate(-50%,-50%) rotatex(' + xDegDistance + 'deg)';
+            };
+        };
+        window.onmouseup = function (e) {
+            //鼠标松开
+            //清除计时器 清除鼠标移动事件
+            clearTimeout(speedTimer);
+            window.onmousemove = null;
+            //判断如果发生移动
+            if (isMove) {
+                //添加过渡属性
+                xBox.style.transition = 'all 0.5s ease-out';
+                zBox.style.transition = 'all 0.5s ease-out';
+                //根据速度计算目标角度，设置到页面上
+                zDegDistance = zDegDistance - (speedX * 10);
+                zBox.style.transform = 'rotatez(' + zDegDistance + 'deg)';
+                xDegDistance = xDegDistance - (speedY * 10);
+                xDegDistance = xDegDistance > 179 ? 179 : xDegDistance < 1 ? 1 : xDegDistance;
+                xBox.style.transform = 'translate(-50%,-50%) rotatex(' + xDegDistance + 'deg)';
+                //记录当前角度的值更新
+                xDegNow = xDegDistance;
+                zDegNow = zDegDistance;
+                //用到的变量重置
+                isMove = false;
+                speedX = 0;
+                speedY = 0;
+                xDegDistance = 0;
+                zDegDistance = 0;
+            }
+        };
 
-    </body>
+    }
+    //鼠标拖拽文件
+    function drop() {
+        //取消鼠标拖拽文件进入窗口的默认行为
+        window.ondragover = function (e) {
+            e.preventDefault();
+        }
+        window.ondrop = function (e) {
+            e.preventDefault();
+        }
+        //添加拖拽到p标签的事件
+        var ps = document.getElementsByTagName('p');
+        for (var i = 0; i < ps.length; i++) {
+            ps[i].index = i;
+            ps[i].ondrop = function (e) {
+                var w = new FileReader();
+                w.index = this.index;
+                w.readAsDataURL(e.dataTransfer.files[0]);
+                w.onload = function () {
+                    ps[this.index].style.backgroundImage = 'url(' + w.result + ')';
+                    ps[this.index].innerHTML = '';
+                }
+            }
+        }
+    }
+</script>
+</body>
 </html>
